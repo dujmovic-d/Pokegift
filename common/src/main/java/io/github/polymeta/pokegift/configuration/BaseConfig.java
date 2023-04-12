@@ -33,6 +33,7 @@ public class BaseConfig {
                 " <aqua>lvl <level> <pokemon></aqua> to <green><player></green>?<giftconfirm><yellow> Click here to confirm!</giftconfirm>";
         public String cooldownFeedback = "<gray>[<white>Poke<red>gift<gray>] <red>You are on cooldown!";
         public String pokemonNotAllowed = "<gray>[<white>Poke<red>gift<gray>] <red>You cannot gift this pokemon!";
+        public String receivedPokemonFeedback = "<gray>[<white>Poke<red>gift<gray>] <green><player> gifted you a <pokemon>!";
         public String successFeedback = "<gray>[<white>Poke<red>gift<gray>] <green>Successfully gifted your pokemon!";
         public String errorCantGiftYourself = "<gray>[<white>Poke<red>gift<gray>]<red> Can't gift yourself pokemon!";
         public String errorCouldntTakePokemon = "<gray>[<white>Poke<red>gift<gray>]<red> Something went wrong taking the pokemon from you";
@@ -83,6 +84,15 @@ public class BaseConfig {
         public Component errorCouldntGivePokemon(ServerPlayer targetPlayer) {
             var text = Pokegift.miniMessage.deserialize(this.errorCouldntGivePokemon,
                     Placeholder.unparsed("player", targetPlayer.getName().getString()));
+
+            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+        }
+
+        public Component receivedPokemonFeedback(ServerPlayer player, Pokemon pokemon) {
+            var text = Pokegift.miniMessage.deserialize(this.receivedPokemonFeedback,
+                    Placeholder.unparsed("player", player.getName().getString()),
+                    Placeholder.unparsed("pokemon", pokemon.getDisplayName().getString())
+            );
 
             return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }

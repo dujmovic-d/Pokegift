@@ -28,6 +28,7 @@ Refer to the default messages to see what placeholders are allowed where.
 - `cooldownFeedback` - message that gets sent when the player is on cooldown
 - `pokemonNotAllowed` - message that gets sent when a player attempts to gift a forbidden Pokémon
 - `successFeedback` - message that get sent on successful gift
+- `receivedPokemonFeedback` - message sent to player who received the gift
 - `errorCantGiftYourself` - error message that gets displayed when a player attempts to gift to themselves
 - `errorCouldntTakePokemon` - generic error message indicating something went wrong whilst taking the Pokémon away from the gifter
 - `errorCouldntGivePokemon` - generic error message indicating something went wrong whilst giving the Pokémon to the target player

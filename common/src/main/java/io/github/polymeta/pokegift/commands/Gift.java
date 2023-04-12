@@ -4,7 +4,6 @@ import com.cobblemon.mod.common.Cobblemon;
 import com.cobblemon.mod.common.api.permission.CobblemonPermission;
 import com.cobblemon.mod.common.api.permission.PermissionLevel;
 import com.cobblemon.mod.common.api.pokemon.PokemonProperties;
-import com.cobblemon.mod.common.api.pokemon.PokemonPropertyExtractor;
 import com.cobblemon.mod.common.api.storage.party.PartyPosition;
 import com.cobblemon.mod.common.command.argument.PartySlotArgumentType;
 import com.cobblemon.mod.common.pokemon.Pokemon;
@@ -16,7 +15,6 @@ import io.github.polymeta.pokegift.Pokegift;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.network.chat.Component;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -106,6 +104,7 @@ public class Gift {
             Pokegift.scheduler.schedule(() -> {playersOnCooldown.remove(player.getUUID());}, Pokegift.config.cooldown, TimeUnit.MINUTES);
         }
         player.sendSystemMessage(Pokegift.config.messages.successFeedback());
+        targetPlayer.sendSystemMessage(Pokegift.config.messages.receivedPokemonFeedback(player, slot));
         return Command.SINGLE_SUCCESS;
     };
 
