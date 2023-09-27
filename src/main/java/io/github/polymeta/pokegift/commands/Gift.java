@@ -12,9 +12,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.github.polymeta.pokegift.Pokegift;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -22,89 +22,89 @@ import java.util.concurrent.TimeUnit;
 
 public class Gift {
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         var giftCommand = dispatcher.register(
-                LiteralArgumentBuilder.<CommandSourceStack>literal("pokegift")
+                LiteralArgumentBuilder.<ServerCommandSource>literal("pokegift")
                         .requires(req -> Cobblemon.INSTANCE.getPermissionValidator().hasPermission(req,
                                 new CobblemonPermission("pokegift.command.gift.base", PermissionLevel.NONE)))
-                        .then(Commands.argument("slot", PartySlotArgumentType.Companion.partySlot())
-                                .then(Commands.argument("player", EntityArgument.player())
-                                        .then(Commands.argument("confirmation", StringArgumentType.greedyString()).executes(ExecuteWithConfirm))
+                        .then(CommandManager.argument("slot", PartySlotArgumentType.Companion.partySlot())
+                                .then(CommandManager.argument("player", EntityArgumentType.player())
+                                        .then(CommandManager.argument("confirmation", StringArgumentType.greedyString()).executes(ExecuteWithConfirm))
                                         .executes(Execute)))
         );
-        dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("pgift").redirect(giftCommand));
+        dispatcher.register(LiteralArgumentBuilder.<ServerCommandSource>literal("pgift").redirect(giftCommand));
     }
 
     private static final ConcurrentSkipListSet<UUID> playersOnCooldown = new ConcurrentSkipListSet<>();
 
-    private static final Command<CommandSourceStack> Execute = context -> {
+    private static final Command<ServerCommandSource> Execute = context -> {
         var slot = PartySlotArgumentType.Companion.getPokemon(context, "slot");
-        var player = context.getSource().getPlayerOrException();
-        var targetPlayer = EntityArgument.getPlayer(context, "player");
-        if(player.getUUID().equals(targetPlayer.getUUID())) {
-            player.sendSystemMessage(Pokegift.config.messages.errorCantGiftYourself());
+        var player = context.getSource().getPlayerOrThrow();
+        var targetPlayer = EntityArgumentType.getPlayer(context, "player");
+        if(player.getUuid().equals(targetPlayer.getUuid())) {
+            player.sendMessage(Pokegift.config.messages.errorCantGiftYourself());
             return Command.SINGLE_SUCCESS;
         }
         var slotNo = ((PartyPosition)slot.getStoreCoordinates().get().getPosition()).getSlot();
         var canBypass = Cobblemon.INSTANCE.getPermissionValidator().hasPermission(player,
                 new CobblemonPermission("pokegift.command.gift.bypass",
                         PermissionLevel.CHEAT_COMMANDS_AND_COMMAND_BLOCKS));
-        if(playersOnCooldown.contains(player.getUUID()) && !canBypass && Pokegift.config.cooldownEnabled) {
-            player.sendSystemMessage(Pokegift.config.messages.cooldownFeedback());
+        if(playersOnCooldown.contains(player.getUuid()) && !canBypass && Pokegift.config.cooldownEnabled) {
+            player.sendMessage(Pokegift.config.messages.cooldownFeedback());
             return Command.SINGLE_SUCCESS;
         }
         if(isPokemonForbidden(slot) && !canBypass) {
-            player.sendSystemMessage(Pokegift.config.messages.pokemonNotAllowed());
+            player.sendMessage(Pokegift.config.messages.pokemonNotAllowed());
             return Command.SINGLE_SUCCESS;
         }
-        player.sendSystemMessage(Pokegift.config.messages.pokegiftFeedback(slot, slotNo, targetPlayer));
+        player.sendMessage(Pokegift.config.messages.pokegiftFeedback(slot, slotNo, targetPlayer));
 
         return Command.SINGLE_SUCCESS;
     };
 
-    private static final Command<CommandSourceStack> ExecuteWithConfirm = context -> {
+    private static final Command<ServerCommandSource> ExecuteWithConfirm = context -> {
         var slot = PartySlotArgumentType.Companion.getPokemon(context, "slot");
         var confirmation = StringArgumentType.getString(context, "confirmation");
         if(!confirmation.trim().equals("--confirm")){
             return Execute.run(context);
         }
-        var player = context.getSource().getPlayerOrException();
-        var targetPlayer = EntityArgument.getPlayer(context, "player");
-        if(player.getUUID().equals(targetPlayer.getUUID())) {
-            player.sendSystemMessage(Pokegift.config.messages.errorCantGiftYourself());
+        var player = context.getSource().getPlayerOrThrow();
+        var targetPlayer = EntityArgumentType.getPlayer(context, "player");
+        if(player.getUuid().equals(targetPlayer.getUuid())) {
+            player.sendMessage(Pokegift.config.messages.errorCantGiftYourself());
             return Command.SINGLE_SUCCESS;
         }
         var canBypass = Cobblemon.INSTANCE.getPermissionValidator().hasPermission(player,
                 new CobblemonPermission("pokegift.command.gift.bypass",
                         PermissionLevel.CHEAT_COMMANDS_AND_COMMAND_BLOCKS));
-        if(playersOnCooldown.contains(player.getUUID()) && !canBypass && Pokegift.config.cooldownEnabled) {
-            player.sendSystemMessage(Pokegift.config.messages.cooldownFeedback());
+        if(playersOnCooldown.contains(player.getUuid()) && !canBypass && Pokegift.config.cooldownEnabled) {
+            player.sendMessage(Pokegift.config.messages.cooldownFeedback());
             return Command.SINGLE_SUCCESS;
         }
         if(isPokemonForbidden(slot) && !canBypass) {
-            player.sendSystemMessage(Pokegift.config.messages.pokemonNotAllowed());
+            player.sendMessage(Pokegift.config.messages.pokemonNotAllowed());
             return Command.SINGLE_SUCCESS;
         }
         var playerParty = Cobblemon.INSTANCE.getStorage().getParty(player);
         var targetParty = Cobblemon.INSTANCE.getStorage().getParty(targetPlayer);
         if(playerParty.remove(slot)) {
             if(!targetParty.add(slot)) {
-                player.sendSystemMessage(Pokegift.config.messages.errorCouldntGivePokemon(targetPlayer));
+                player.sendMessage(Pokegift.config.messages.errorCouldntGivePokemon(targetPlayer));
                 playerParty.add(slot); //give pokemon back if something went wrong
                 return Command.SINGLE_SUCCESS;
             }
         }
         else {
-            player.sendSystemMessage(Pokegift.config.messages.errorCouldntTakePokemon());
+            player.sendMessage(Pokegift.config.messages.errorCouldntTakePokemon());
             return Command.SINGLE_SUCCESS;
         }
 
         if(Pokegift.config.cooldownEnabled && !canBypass) {
-            playersOnCooldown.add(player.getUUID());
-            Pokegift.scheduler.schedule(() -> {playersOnCooldown.remove(player.getUUID());}, Pokegift.config.cooldown, TimeUnit.MINUTES);
+            playersOnCooldown.add(player.getUuid());
+            Pokegift.scheduler.schedule(() -> {playersOnCooldown.remove(player.getUuid());}, Pokegift.config.cooldown, TimeUnit.MINUTES);
         }
-        player.sendSystemMessage(Pokegift.config.messages.successFeedback());
-        targetPlayer.sendSystemMessage(Pokegift.config.messages.receivedPokemonFeedback(player, slot));
+        player.sendMessage(Pokegift.config.messages.successFeedback());
+        targetPlayer.sendMessage(Pokegift.config.messages.receivedPokemonFeedback(player, slot));
         return Command.SINGLE_SUCCESS;
     };
 

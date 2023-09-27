@@ -1,8 +1,8 @@
 package io.github.polymeta.pokegift;
 
-import dev.architectury.event.events.common.CommandRegistrationEvent;
 import io.github.polymeta.pokegift.commands.Gift;
 import io.github.polymeta.pokegift.configuration.BaseConfig;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +41,7 @@ public class Pokegift {
         //load config and pool and message configuration
         loadConfig();
 
-        CommandRegistrationEvent.EVENT.register((dispatcher, registry, selection) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registry, selection) -> {
             Gift.register(dispatcher);
         });
     }

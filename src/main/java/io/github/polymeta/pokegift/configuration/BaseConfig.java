@@ -10,8 +10,8 @@ import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class BaseConfig {
         public String errorCouldntGivePokemon = "<gray>[<white>Poke<red>gift<gray>]<red> Something went wrong sending the pokemon to <player>";
 
 
-        public Component pokegiftFeedback(Pokemon pokemon, int slot, ServerPlayer targetPlayer) {
+        public Text pokegiftFeedback(Pokemon pokemon, int slot, ServerPlayerEntity targetPlayer) {
             var miniMessage = MiniMessage.builder()
                     .tags(TagResolver.builder()
                             .resolvers(TagResolver.standard())
@@ -53,48 +53,48 @@ public class BaseConfig {
                     Placeholder.unparsed("pokemon", pokemon.getDisplayName().getString()),
                     Placeholder.unparsed("player", targetPlayer.getName().getString()));
 
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component cooldownFeedback() {
+        public Text cooldownFeedback() {
             var text = Pokegift.miniMessage.deserialize(this.cooldownFeedback);
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component successFeedback() {
+        public Text successFeedback() {
             var text = Pokegift.miniMessage.deserialize(this.successFeedback);
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component pokemonNotAllowed() {
+        public Text pokemonNotAllowed() {
             var text = Pokegift.miniMessage.deserialize(this.pokemonNotAllowed);
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component errorCantGiftYourself() {
+        public Text errorCantGiftYourself() {
             var text = Pokegift.miniMessage.deserialize(this.errorCantGiftYourself);
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component errorCouldntTakePokemon() {
+        public Text errorCouldntTakePokemon() {
             var text = Pokegift.miniMessage.deserialize(this.errorCouldntTakePokemon);
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component errorCouldntGivePokemon(ServerPlayer targetPlayer) {
+        public Text errorCouldntGivePokemon(ServerPlayerEntity targetPlayer) {
             var text = Pokegift.miniMessage.deserialize(this.errorCouldntGivePokemon,
                     Placeholder.unparsed("player", targetPlayer.getName().getString()));
 
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
 
-        public Component receivedPokemonFeedback(ServerPlayer player, Pokemon pokemon) {
+        public Text receivedPokemonFeedback(ServerPlayerEntity player, Pokemon pokemon) {
             var text = Pokegift.miniMessage.deserialize(this.receivedPokemonFeedback,
                     Placeholder.unparsed("player", player.getName().getString()),
                     Placeholder.unparsed("pokemon", pokemon.getDisplayName().getString())
             );
 
-            return Component.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
+            return Text.Serializer.fromJson(GsonComponentSerializer.gson().serialize(text));
         }
     }
 }
